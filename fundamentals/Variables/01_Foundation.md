@@ -1,217 +1,302 @@
-# Variables
+# Variables — Foundations
 
-## What is Variable
-A variable is a named storage location that holds a value.
-Its lifetime decides how long it exists, and its scope decides where it can be accessed.
-[Name → place → data, Existence = lifetime, access = scope]
+### 1. Definition
+A variable is a named binding between:
+- A type
+- A memory location
+- A lifetime
+- A scope
+- A mutability rule
+    
+        A variable is **not just a box that stores data.**
 
-## Core Properties of a Variable
-    - type: Type specifies what kind of value can be stored, how much memory is reserved, and what operations are valid. [1. Memory size 2. Type of value 3. Valid Operations]
-    - scope of variable: defines where the variable can be accessed. [Access] 
-    - lifetime: Lifetime defines how long the variable remains in memory from creation to destruction. [Where & How declared]
-    - mutablity: defines whether the value can change after initialization.
-    - linkage / ownership: Linkage describes whether the variable is shared across different parts of the program or limited to a single file or scope (mostly relevant in C/C++).
+It is a contract between:
+- The compiler (type rules)
+- The runtime (lifetime & memory behavior)
+- The memory model (allocation and layout rules)
 
-## Categories of Variables
-    - Local Variable: Declared inside a function or block and accessible only within that block. Created when execution enters the block. Destroyed when execution leaves the block.
-    - Instance Variable: Belongs to an object. Each object has its own copy. Declared inside a class but outside methods. Created when the object is created. Destroyed when the object is destroyed.
-    - Static / class Variable: Belongs to the class, not to objects. Only one copy exists and is shared. Created when the program (or class) is loaded. Destroyed when the program ends (or class is unloaded).
-    - Global Variable (mainly C++): Declared outside all functions or classes. Accessible from multiple parts of the program (subject to visibility rules). Created before main starts. Destroyed when the program ends.
- 
- ## Mutability
-- Mutable variable: value can change.
-- Constant / Final variable: value cannot change after initialization.
+---
 
-## Language Implementations
+### 2. Core Properties (Language-Independent)
 
-### C++
-- Global variables can be declared outside all functions and may be accessed from different parts of the program depending on visibility rules.
-- Local variables are not automatically initialized. Using them without assigning a value leads to indeterminate (garbage) data.
-- Global and static variables are default-initialized.
+Every variable has these properties.
 
-### Java
-- Java does not support true global variables. Class-level static variables are used instead.
-- Local variables must be explicitly initialized before use.
-- Instance and static variables receive default values if not assigned.
+---
 
-## Memory, Declaration & Initialization
-- Declaring a variable reserves memory according to its type and storage rules.
-- Initialization assigns the first value to that memory.
-- If no value is provided, the result depends on the language and the kind of variable (some receive defaults, some remain uninitialized).
-- A variable remains valid only during its lifetime. After that period, the memory is no longer accessible.
-- If the variable is declared as constant/final, its value cannot be changed after initialization.
+#### 2.1 Type
+Defines:
+- What data can be stored
+- Memory size
+- Valid operations
+- Representation in memory
 
-## Declaration Syntax Examples
+Why it matters:
+- Enforces compile-time safety.
+- Influences memory layout.
+- Impacts performance and correctness.
 
-### C++
-#### Declaration:
-    datatype variable_name;
+---
 
-#### Initialization:
-    datatype variable_name = value;
+#### 2.2 Scope
+Defines where a variable is accessible.
 
-#### Multiple variables:
-    datatype a, b, c;
+Common scopes:
+- Block scope
+- Function/method scope
+- Class scope
+- Global scope (C++)
 
-#### Constant:
-    const datatype variable_name = value;
+Scope is a compile-time property.
 
-### Java
-#### Declaration:
-    datatype variable_name;
+Scope ≠ Lifetime.
 
-#### Initialization:
-    datatype variable_name = value;
+A variable may be inaccessible yet still alive.
 
-#### Multiple variables:
-    datatype a, b, c;
+---
 
-#### Constant:
-    final datatype variable_name = value;
+#### 2.3 Lifetime
+Defines how long a variable exists in memory.
 
-## Examples by category
+Typical lifetimes:
+- Block duration (local variables)
+- Object lifetime (instance variables)
+- Program lifetime (static/global)
+- Until class unloading (Java static fields)
 
-### C++
-#### Local 
-    int main(){
-        int x=10; // accessed only inside this block
-    }
+Lifetime is a runtime property.
 
-#### Instance
-    class Person{
-    public:
-        int x=10; // each object gets its own copy
-    };
+---
 
-#### Static 
-    class Person{
-    public:
-        static int x; // single shared copy for all objects
-    };
+#### 2.4 Mutability
+Defines whether value can change after initialization.
+- Mutable → value can change
+- Immutable → `const` (C++), `final` (Java)
 
-#### Global
-    int x=10; // visible globally (subject to linkage rules)
-    int main(){
-        // code
-    }
+Immutability is a design decision.
 
-#### LocalvsInstance
-    class Val{
-        int x=10;
-        void LocalvsInstance(){
-            int x=5;
-            cout<<x; //local
-            cout<<this->x; //instance
-        }
-    };
+It does not change scope or lifetime.
 
-#### InstancevsStatic
-Instance → object
-Static → class
-    class Person{
-    public:
-        int x = 1;
-        static int y;
-    };
-    int Person::y = 0;
+---
 
-    int main(){
-        Person p1, p2;
+#### 2.5 Linkage (C++)
+Defines visibility across translation units.
+- Internal linkage
+- External linkage
 
-        p1.x = 5;
-        p2.x = 7;   // different copies
+Linkage is resolved at link time, not runtime.
 
-        Person::y = 100; // shared
-    }
+(Java does not expose linkage explicitly.)
 
-### Java
-#### Local
-    public static void main(String[] args){
-        int x=10; // accessed only this block
-    }
+---
 
-#### Instance
-    class Person{
-        int x=10;
-    }
+### Core Property Separation
 
-#### Static 
-    class Person{
-        static int x;
-    }
+#### 1. Scope vs Lifetime
+- Scope → where it can be accessed (compile-time)
+- Lifetime → how long it exists (runtime)
 
-#### LocalvsInstance
-    class Val{
-        int x=10;
-        void LocalvsInstance(){
-            int x=5;
-            System.out.println(x); //local
-            System.out.println(this.x); //instance
-        }
-    }
-#### InstancevsStatic
-    class Person{
-    int x = 1;
-    static int y;
-    }
-    class Main{
-        public staitc void main(String[] args){
-            Person p1 = new Person();
-            Person p2 = new Person();
-            p1.x=5;
-            p2.x=7; // different copies
+They are independent.
 
-            Person.y = 100; //shared
-        }
-    }
+#### 2. Lifetime vs Storage Location
+- Lifetime is a language rule.
+- Stack/heap is an implementation detail.
 
-## Initialization behavior
+#### 3. Mutability vs Lifetime
+- const / final does not change lifetime.
+- It changes write permissions.
 
-- In C++, local variables are uninitialized by default. Global and static variables are zero-initialized.
-- in java, local must be initialized, instance and static will get a default value 
+#### 4. Linkage vs Scope (C++)
+- Scope → visibility in source code
+- Linkage → visibility across translation units
 
-## Memory Area Hint (Conceptual Model)
+---
+### 3. Categories of Variables
+---
 
-This is a simplified conceptual model used for understanding.
-Actual memory layout and optimizations may vary by compiler/JVM.
+#### 3.1 Local Variable
+- Declared inside function or block
+- Scope = block
+- Lifetime = block execution
+- Automatic storage duration (C++). 
+- Typically implemented using stack frames, but not guaranteed by the standard.
 
-- Local variables → typically associated with stack frames.
-- Instance variables → live inside objects, typically on the heap.
-- Static / global variables → stored in static storage and exist for the program lifetime.
+##### C++:
+- Not automatically initialized
+- Using uninitialized locals → undefined behavior
 
-## Value vs Reference
+##### Java:
+- Must be explicitly initialized before use
 
-- Primitive variables store the actual value.
-- Reference variables store the address of an object.
-- In Java, objects are accessed through references.
-- In C++, objects can be accessed directly or via pointers/references.
+---
 
-## Parameter Passing
+#### 3.2 Instance Variable
+- Declared inside class
+- Belongs to object
+- One copy per object
+- Lifetime = object lifetime
 
-    - Pass by value: a copy of the variable is passed.
-    - Pass by reference: the original variable is accessed.
-In Java, everything is pass-by-value. When objects are passed, the reference is copied.
+##### C++:
+- Object may live on stack or heap
 
-## Compile-Time vs Runtime Variables
+##### Java:
+- Object always on heap
+- Default values assigned
 
-- Static/global variables are allocated before program execution.
-- Local variables are created at runtime when function executes.
-- Dynamically allocated memory (new / malloc) exists until manually freed or garbage collected.
+---
 
-## Variable Shadowing
+#### 3.3 Static / Class Variable
+- Belongs to class, not object
+- Single shared copy
+- Shared across all instances
 
-When a local variable has the same name as an instance or global variable, the local variable hides it within its scope.
+##### C++:
+- Static storage duration
+- Lifetime = entire program
 
-## Quick Recall Map
+##### Java:
+- Initialized during class initialization
+- Lifetime = until class unloading (usually program lifetime)
 
-Variable = Name + Type + Memory + Lifetime + Scope + Mutability
+Static does NOT imply thread safety.
 
-Local → block lifetime → must initialize (Java)
-Instance → object lifetime → default initialized
-Static → class/program lifetime → single shared copy
-Global (C++) → program lifetime
+---
 
-Primitive → stores value
-Reference → stores address/reference
+#### 3.4 Global Variable (C++)
+- Declared outside functions/classes
+- Static storage duration
+- Lifetime = entire program
+- Visibility depends on linkage
 
-Initialization rules differ by language.
+Excessive global state reduces modularity.
+
+---
+
+### 4. Declaration vs Initialization
+#### Declaration
+Defines type and introduces name.
+
+#### Initialization
+Assigns first value.
+
+Declaration does not always imply initialization.
+Behavior depends on storage duration and language rules.
+
+---
+
+### 5. Language Differences
+---
+
+#### C++
+- True global variables supported
+- Local variables not auto-initialized
+- Global/static zero-initialized
+- Stack and heap objects
+- Supports references and pointers
+- Multiple storage durations
+
+---
+#### Java
+- No true global variables
+- Local variables must be initialized
+- Instance/static get default values
+- Objects conceptually heap-allocated
+- Always pass-by-value (reference copied)
+- Class loading defines static lifetime
+
+---
+
+### 6. Value vs Reference
+#### Value variable
+Stores actual data.
+
+#### Reference variable
+Stores address/reference to object.
+
+##### C++:
+- Objects can be stored directly
+- Pointers → objects storing addresses
+- References → aliases to existing objects
+
+##### Java:
+- Primitives → value
+- Objects → reference 
+- Method calls copy the reference value, not the object
+
+Java does not support pass-by-reference.
+
+---
+
+### 7. Parameter Passing
+- Pass-by-value → copy is passed.
+- Pass-by-reference → Original variable is accessed.
+
+#### C++:
+- Supports value, reference, and pointer semantics.
+
+#### Java:
+- Only pass-by-value.
+- When passing objects, the reference is copied.
+
+Reassigning parameter inside method does not change caller variable in Java.
+
+---
+
+### 8. Variable Shadowing
+Occurs when inner scope redeclares a variable with same name.
+
+- Inner variable hides outer variable.
+- May cause subtle bugs.
+
+> Avoid unnecessary shadowing.
+
+---
+
+### 9. Conceptual Memory View (High-Level)
+This model is simplified.
+- Local variables → stack frame
+- Instance variables → inside object (heap)
+- Static/global variables → static storage area
+
+Actual layout depends on compiler or JVM implementation.
+Detailed memory mechanics belong in 02_MemoryModel.md.
+
+---
+
+## Quick Recall 
+
+Variable =
+Name + Type + Memory Binding + Scope + Lifetime + Mutability
+
+---
+
+Scope → where accessible
+
+Lifetime → how long alive
+
+Type → memory + operations
+
+Mutability → change allowed or not
+
+---
+
+#### C++:
+- Locals uninitialized
+- Globals/static zero-initialized
+- Stack + heap objects
+- Supports references
+
+#### Java:
+- No true globals
+- Locals must initialize
+- Objects always heap
+- Pass-by-value only
+
+---
+
+Local → block lifetime
+
+Instance → object lifetime
+
+Static → class/program lifetime
+
+---
